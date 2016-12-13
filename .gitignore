@@ -6,3 +6,5 @@ webpack-assets.json
 webpack-stats.json
 npm-debug.log
 *.swp
+.happypack
+yarn-error.log

@@ -9,10 +9,10 @@ var port = (+process.env.PORT + 1) || 3001;
 
 var WebpackIsomorphicToolsPlugin = require('webpack-isomorphic-tools/plugin');
 var webpackIsomorphicToolsPlugin = new WebpackIsomorphicToolsPlugin(require('./webpack-isomorphic-tools'));
-var HappyPack = require('happypack');
 
 var babelrc = fs.readFileSync('./.babelrc');
 var babelrcObject = {};
+var HappyPack = require('happypack');
 
 try {
   babelrcObject = JSON.parse(babelrc);
@@ -41,6 +41,7 @@ for (var i = 0; i < babelLoaderQuery.plugins.length; ++i) {
 
 babelLoaderQuery.cacheDirectory = true;
 
+
 if (!reactTransform) {
   reactTransform = ['react-transform', {transforms: []}];
   babelLoaderQuery.plugins.push(reactTransform);
@@ -58,21 +59,29 @@ reactTransform[1].transforms.push({
 
 module.exports = {
   cache: true,
-  devtool: 'eval',
+  devtool: 'inline-eval-cheap-source-map',
   context: path.resolve(__dirname, '..'),
   entry: {
+    app_assets: ['./src/client.js'],
     'main': [
       'webpack-hot-middleware/client?path=http://' + host + ':' + port + '/__webpack_hmr',
+      // 'bootstrap-sass!./src/theme/bootstrap.config.js',
+      // 'bootstrap-sass!./src/theme/bootstrap.config.js',
       'font-awesome-webpack!./src/theme/font-awesome.config.js',
       'react-widgets-webpack!./src/theme/react-widgets.config.js',
       './src/client.js'
+    ],
+    vendor: [
+      'react',
+      'react-dom'
     ]
   },
   output: {
     path: assetsPath,
-    filename: 'app.js',
-    publicPath: 'http://' + host + ':' + port + '/dist/',
-    pathinfo: true,
+    filename: '[name].dll.js',
+    library: '[name]',
+    chunkFilename: '[name]-[chunkhash].js',
+    publicPath: 'http://' + host + ':' + (port - 1) + '/dist/'
   },
   module: {
     preLoaders: [
@@ -84,16 +93,11 @@ module.exports = {
       },
     ],
     loaders: [
-      {
-        test: /\.jsx?$/,
-        exclude: /node_modules/,
-        loaders: [ 'happypack/loader' ],
-        // loader: 'babel' + JSON.stringify(babelLoaderQuery),
-      },
+      { test: /\.jsx?$/, exclude: /node_modules/, loaders: [ 'happypack/loader' ]},
       { test: /\.json$/, loader: 'json-loader' },
       { test: /\.less$/, loader: 'style!css?modules&importLoaders=2&sourceMap&localIdentName=[local]___[hash:base64:5]!autoprefixer?browsers=last 2 version!less?outputStyle=expanded&sourceMap' },
       { test: /\.scss$/, loader: 'style!css?modules&importLoaders=2&sourceMap&localIdentName=[local]___[hash:base64:5]!autoprefixer?browsers=last 2 version!sass?outputStyle=expanded&sourceMap' },
-      { test: /\.css$/, loader: "style!css?-discardDuplicates" },
+      { test: /\.css$/, loader: "style!css" },
       { test: /\.woff(\?v=\d+\.\d+\.\d+)?$/, loader: 'url?limit=10000&mimetype=application/font-woff' },
       { test: /\.woff2(\?v=\d+\.\d+\.\d+)?$/, loader: 'url?limit=10000&mimetype=application/font-woff' },
       { test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/, loader: 'url?limit=10000&mimetype=application/octet-stream' },
@@ -105,10 +109,8 @@ module.exports = {
   progress: true,
   resolve: {
     modulesDirectories: [
+      'src',
       'node_modules'
-    ],
-    root: [
-      path.resolve('./src')
     ],
     extensions: ['', '.json', '.js', '.jsx']
   },
@@ -118,10 +120,6 @@ module.exports = {
   plugins: [
     // hot reload
     new webpack.HotModuleReplacementPlugin(),
-    new webpack.DllReferencePlugin({
-      context: path.join(__dirname, '../'),
-      manifest: require(path.join(assetsPath, 'vendor-manifest.json')),
-    }),
     new webpack.IgnorePlugin(/webpack-stats\.json$/),
     new webpack.DefinePlugin({
       __VERSION__: JSON.stringify(require((require('path').resolve('package.json'))).version),
@@ -129,6 +127,11 @@ module.exports = {
       __SERVER__: false,
       __DEVELOPMENT__: true,
       __DEVTOOLS__: true  // <-------- DISABLE redux-devtools HERE
+    }),
+    webpackIsomorphicToolsPlugin.development(),
+    new webpack.DllPlugin({
+      name: '[name]',
+      path: path.join( assetsPath, '[name]-manifest.json' )
     }),
     new HappyPack({
       loaders: ['babel?' + JSON.stringify(babelLoaderQuery), 'eslint-loader'],
