@@ -24,20 +24,20 @@ module.exports = {
       extension: 'svg',
       parser: WebpackIsomorphicToolsPlugin.url_loader_parser
     },
-    // bootstrap: {
-    //   extension: 'js',
-    //   include: ['./src/theme/bootstrap.config.js'],
-    //   filter: function(module, regex, options, log) {
-    //     function is_bootstrap_style(name) {
-    //       return name.indexOf('./src/theme/bootstrap.config.js') >= 0;
-    //     }
-    //     if (options.development) {
-    //       return is_bootstrap_style(module.name) && WebpackIsomorphicToolsPlugin.style_loader_filter(module, regex, options, log);
-    //     }
-    //   },
-    //   path: WebpackIsomorphicToolsPlugin.style_loader_path_extractor,
-    //   parser: WebpackIsomorphicToolsPlugin.css_loader_parser
-    // },
+    bootstrap: {
+      extension: 'js',
+      include: ['./src/theme/bootstrap.config.js'],
+      filter: function(module, regex, options, log) {
+        function is_bootstrap_style(name) {
+          return name.indexOf('./src/theme/bootstrap.config.js') >= 0;
+        }
+        if (options.development) {
+          return is_bootstrap_style(module.name) && WebpackIsomorphicToolsPlugin.style_loader_filter(module, regex, options, log);
+        }
+      },
+      path: WebpackIsomorphicToolsPlugin.style_loader_path_extractor,
+      parser: WebpackIsomorphicToolsPlugin.css_loader_parser
+    },
     style_modules: {
       extensions: ['less', 'scss', 'css'],
       filter: function(module, regex, options, log) {

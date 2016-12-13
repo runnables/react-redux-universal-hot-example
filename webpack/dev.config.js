@@ -10,6 +10,7 @@ var port = (+process.env.PORT + 1) || 3001;
 var WebpackIsomorphicToolsPlugin = require('webpack-isomorphic-tools/plugin');
 var webpackIsomorphicToolsPlugin = new WebpackIsomorphicToolsPlugin(require('./webpack-isomorphic-tools'));
 var HappyPack = require('happypack');
+var HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
 var babelrc = fs.readFileSync('./.babelrc');
 var babelrcObject = {};
@@ -116,15 +117,35 @@ module.exports = {
     emitWarning: true
   },
   plugins: [
-    // hot reload
     new webpack.HotModuleReplacementPlugin(),
+    new HardSourceWebpackPlugin({
+      cacheDirectory: path.resolve('.cache/dev/[confighash]'),
+      recordsPath: path.resolve('.cache/dev/[confighash]/records.json'),
+      configHash: function(webpackConfig) {
+        return require('node-object-hash')().hash(webpackConfig);
+      },
+      environmentHash: {
+        root: process.cwd(),
+        directories: ['src'],
+      },
+      environmentHash: function() {
+        return new Promise(function(resolve, reject) {
+          fs.readFile(path.resolve('yarn.lock'), function(err, src) {
+            if (err) {return reject(err);}
+            resolve(
+              require('crypto').createHash('md5').update(src).digest('hex')
+            );
+          });
+        });
+      },
+    }),
     new webpack.DllReferencePlugin({
       context: path.join(__dirname, '../'),
       manifest: require(path.join(assetsPath, 'vendor-manifest.json')),
     }),
     new webpack.IgnorePlugin(/webpack-stats\.json$/),
     new webpack.DefinePlugin({
-      __VERSION__: JSON.stringify(require((require('path').resolve('package.json'))).version),
+      __VERSION__: JSON.stringify(require(path.resolve('package.json')).version),
       __CLIENT__: true,
       __SERVER__: false,
       __DEVELOPMENT__: true,

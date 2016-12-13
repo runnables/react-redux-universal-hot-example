@@ -13,6 +13,7 @@ var webpackIsomorphicToolsPlugin = new WebpackIsomorphicToolsPlugin(require('./w
 var babelrc = fs.readFileSync('./.babelrc');
 var babelrcObject = {};
 var HappyPack = require('happypack');
+var HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
 try {
   babelrcObject = JSON.parse(babelrc);
@@ -65,8 +66,7 @@ module.exports = {
     app_assets: ['./src/client.js'],
     'main': [
       'webpack-hot-middleware/client?path=http://' + host + ':' + port + '/__webpack_hmr',
-      // 'bootstrap-sass!./src/theme/bootstrap.config.js',
-      // 'bootstrap-sass!./src/theme/bootstrap.config.js',
+      'bootstrap-sass!./src/theme/bootstrap.config.js',
       'font-awesome-webpack!./src/theme/font-awesome.config.js',
       'react-widgets-webpack!./src/theme/react-widgets.config.js',
       './src/client.js'
@@ -118,11 +118,31 @@ module.exports = {
     emitWarning: true
   },
   plugins: [
-    // hot reload
     new webpack.HotModuleReplacementPlugin(),
+    new HardSourceWebpackPlugin({
+      cacheDirectory: path.resolve('.cache/dll/[confighash]'),
+      recordsPath: path.resolve('.cache/dll/[confighash]/records.json'),
+      configHash: function(webpackConfig) {
+        return require('node-object-hash')().hash(webpackConfig);
+      },
+      environmentHash: {
+        root: process.cwd(),
+        directories: ['src'],
+      },
+      environmentHash: function() {
+        return new Promise(function(resolve, reject) {
+          fs.readFile(path.resolve('yarn.lock'), function(err, src) {
+            if (err) {return reject(err);}
+            resolve(
+              require('crypto').createHash('md5').update(src).digest('hex')
+            );
+          });
+        });
+      },
+    }),
     new webpack.IgnorePlugin(/webpack-stats\.json$/),
     new webpack.DefinePlugin({
-      __VERSION__: JSON.stringify(require((require('path').resolve('package.json'))).version),
+      __VERSION__: JSON.stringify(require(path.resolve('package.json')).version),
       __CLIENT__: true,
       __SERVER__: false,
       __DEVELOPMENT__: true,
