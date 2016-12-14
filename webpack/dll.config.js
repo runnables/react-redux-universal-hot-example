@@ -66,7 +66,7 @@ module.exports = {
     app_assets: ['./src/client.js'],
     'main': [
       'webpack-hot-middleware/client?path=http://' + host + ':' + port + '/__webpack_hmr',
-      'bootstrap-sass!./src/theme/bootstrap.config.js',
+      'bootstrap-loader',
       'font-awesome-webpack!./src/theme/font-awesome.config.js',
       'react-widgets-webpack!./src/theme/react-widgets.config.js',
       './src/client.js'
