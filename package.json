@@ -180,6 +180,8 @@
     "onchange": "^3.2.0",
     "phantomjs": "^1.9.18",
     "phantomjs-polyfill": "0.0.1",
+    "postcss-loader": "^1.2.1",
+    "precss": "^1.4.0",
     "react-a11y": "^0.2.6",
     "react-addons-test-utils": "0.14.8",
     "react-transform-catch-errors": "^1.0.0",
