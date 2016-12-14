@@ -68,6 +68,10 @@ module.exports = {
       __DEVELOPMENT__: false,
       __DEVTOOLS__: false
     }),
+    new webpack.ProvidePlugin({
+      $: "jquery",
+      jQuery: "jquery"
+    }),
 
     // ignore dev config
     new webpack.IgnorePlugin(/\.\/dev/, /\/config$/),

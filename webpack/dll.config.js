@@ -148,6 +148,10 @@ module.exports = {
       __DEVELOPMENT__: true,
       __DEVTOOLS__: true  // <-------- DISABLE redux-devtools HERE
     }),
+    new webpack.ProvidePlugin({
+      $: "jquery",
+      jQuery: "jquery"
+    }),
     webpackIsomorphicToolsPlugin.development(),
     new webpack.DllPlugin({
       name: '[name]',

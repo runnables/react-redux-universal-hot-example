@@ -152,6 +152,10 @@ module.exports = {
       __DEVELOPMENT__: true,
       __DEVTOOLS__: true  // <-------- DISABLE redux-devtools HERE
     }),
+    new webpack.ProvidePlugin({
+      $: "jquery",
+      jQuery: "jquery"
+    }),
     new HappyPack({
       loaders: ['babel?' + JSON.stringify(babelLoaderQuery), 'eslint-loader'],
     })
